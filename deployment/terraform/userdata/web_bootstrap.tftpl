@@ -1,0 +1,68 @@
+#!/bin/bash
+
+touch /home/opc/bootstrap.log
+chown -R opc:opc /home/opc/bootstrap.log
+
+# Update and upgrade repo
+dnf update -y
+echo "dnf update" >> /home/opc/bootstrap.log
+dnf upgrade -y
+echo "dnf upgrade" >> /home/opc/bootstrap.log
+
+dnf install python3-firewall -y
+echo "dnf python3-firewall" >> /home/opc/bootstrap.log
+
+dnf install ansible -y
+echo "dnf ansible" >> /home/opc/bootstrap.log
+
+# Get web
+wget -O /home/opc/web.tar.gz "${web_par_full_path}"
+echo "wget web.tar.gz" >> /home/opc/bootstrap.log
+
+# Extract web
+mkdir /home/opc/web
+tar xzf /home/opc/web.tar.gz -C /home/opc/web && \
+    rm /home/opc/web.tar.gz
+echo "tar x web.tar.gz" >> /home/opc/bootstrap.log
+chown -R opc:opc /home/opc/web
+
+# Get ansible_web
+wget -O /home/opc/ansible_web.tar.gz "${ansible_web_par_full_path}"
+echo "wget ansible_web.tar.gz" >> /home/opc/bootstrap.log
+
+# Extract ansible_web
+mkdir /home/opc/ansible_web
+tar xzf /home/opc/ansible_web.tar.gz -C /home/opc/ansible_web && \
+    rm /home/opc/ansible_web.tar.gz
+echo "tar x ansible_web.tar.gz" >> /home/opc/bootstrap.log
+chown -R opc:opc /home/opc/ansible_web
+
+cat <<EOT >> /home/opc/ansible_params.json
+{
+  "web_dest_directory": "/home/opc/web"
+}
+EOT
+chown opc:opc /home/opc/ansible_params.json
+echo "ansible_params.json" >> /home/opc/bootstrap.log
+
+cat <<EOT >> /home/opc/server.ini
+[web]
+localhost ansible_connection=local ansible_user=root
+
+[web:vars]
+ansible_python_interpreter="/usr/bin/python3"
+EOT
+chown opc:opc /home/opc/server.ini
+echo "server.ini" >> /home/opc/bootstrap.log
+
+ANSIBLE_PYTHON_INTERPRETER="/usr/bin/python3" ansible-galaxy collection install ansible.posix
+
+echo "ansible-playbook" >> /home/opc/ansible-playbook.log
+chown opc:opc /home/opc/ansible-playbook.log
+ANSIBLE_PYTHON_INTERPRETER="/usr/bin/python3" ansible-playbook \
+    -i /home/opc/server.ini \
+    --extra-vars "@/home/opc/ansible_params.json" \
+        /home/opc/ansible_web/server.yaml | tee -a /home/opc/ansible-playbook.log
+echo "ansible-playbook" >> /home/opc/bootstrap.log
+
+# firewalld issue https://github.com/ansible-collections/ansible.posix/issues/75

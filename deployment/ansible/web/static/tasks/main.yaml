@@ -1,0 +1,35 @@
+---
+- name: Add nginx repository
+  ansible.builtin.yum_repository:
+    name: nginx
+    description: nginx repository
+    baseurl: https://nginx.org/packages/rhel/$releasever/$basearch/
+    gpgcheck: no
+    enabled: yes
+- name: Install nginx
+  ansible.builtin.package:
+    name: nginx
+    update_cache: yes
+- name: Enable nginx
+  ansible.builtin.service:
+    name: nginx.service
+    state: started
+    enabled: yes
+- name: Copy static content
+  ansible.builtin.copy:
+    src: "{{web_dest_directory}}/"
+    dest: /usr/share/nginx/html
+  notify: restart nginx
+- name: Disable firewalld (workaround ansible firewalld issue)
+  ansible.builtin.systemd_service:
+    name: firewalld
+    state: stopped
+    enabled: false
+# - name: Add firewall ports
+#   ansible.posix.firewalld:
+#     zone: public
+#     service: http
+#     permanent: yes
+#     immediate: yes
+#     state: enabled
+#     ignore_errors: true

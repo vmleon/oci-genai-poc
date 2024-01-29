@@ -5,8 +5,10 @@ import {
   setVariableFromEnvOrPrompt,
   writeEnvJson,
   readEnvJson,
+  exitWithError,
 } from "./lib/utils.mjs";
 import {
+  getNamespace,
   getRegions,
   getTenancyId,
   searchCompartmentIdByName,
@@ -20,16 +22,21 @@ $.verbose = false;
 let properties = await readEnvJson();
 
 await setTenancyEnv();
+await setNamespaceEnv();
 await setRegionEnv();
 await setCompartmentEnv();
 await createSSHKeys("genai");
 await createCerts();
 
-await generateTFVars();
-
 async function setTenancyEnv() {
   const tenancyId = await getTenancyId();
   properties = { ...properties, tenancyId };
+  await writeEnvJson(properties);
+}
+
+async function setNamespaceEnv() {
+  const namespace = await getNamespace();
+  properties = { ...properties, namespace };
   await writeEnvJson(properties);
 }
 
@@ -89,7 +96,7 @@ async function createSSHKeys(name) {
 }
 
 async function createCerts() {
-  const certPath = path.join(__dirname, ".certs");
+  const certPath = path.join(__dirname, "..", ".certs");
   await $`mkdir -p ${certPath}`;
   await createSelfSignedCert(certPath);
   properties = {
@@ -124,16 +131,16 @@ async function generateTFVars() {
   });
 
   console.log(
-    `Terraform will deploy resources in ${chalk.yellow(
+    `Terraform will deploy resources in ${chalk.green(
       regionName
     )} in compartment ${
-      compartmentName ? chalk.yellow(compartmentName) : chalk.yellow("root")
+      compartmentName ? chalk.green(compartmentName) : chalk.green("root")
     }`
   );
 
   await fs.writeFile(tfVarsPath, output);
 
-  console.log(`File ${chalk.yellow(tfVarsPath)} created`);
+  console.log(`File ${chalk.green(tfVarsPath)} created`);
 
   console.log(`1. ${chalk.yellow("cd deployment/terraform/")}`);
   console.log(`2. ${chalk.yellow("terraform init")}`);

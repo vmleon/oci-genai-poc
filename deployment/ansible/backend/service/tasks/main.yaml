@@ -1,0 +1,55 @@
+---
+- name: Install JDK 17
+  ansible.builtin.package:
+    name: jdk-17
+    update_cache: yes
+- name: Create Backend config directory
+  ansible.builtin.file:
+    path: "{{backend_dest_directory}}/config"
+    state: directory
+    owner: opc
+    group: opc
+    mode: '0744'
+- name: Copy application.properties file
+  ansible.builtin.copy:
+    src: files/application.properties
+    dest: "{{backend_dest_directory}}/config/application.properties"
+    owner: opc
+    group: opc
+    mode: '0640'
+- name: Copy backend service file
+  ansible.builtin.template:
+    src: files/backend.service.j2
+    dest: /etc/systemd/system/backend.service
+    mode: '0644'
+- name: Copy run script file
+  ansible.builtin.template:
+    src: files/run.sh.j2
+    dest: "{{backend_dest_directory}}/run.sh"
+    owner: opc
+    group: opc
+    mode: '0744'
+- name: Reload Systemd Daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+- name: Start backend service
+  ansible.builtin.systemd:
+    name: backend
+    state: started
+- name: Enable backend service
+  ansible.builtin.systemd:
+    name: backend
+    enabled: yes
+- name: Disable firewalld (workaround ansible firewalld issue)
+  ansible.builtin.systemd_service:
+    name: firewalld
+    state: stopped
+    enabled: false
+# - name: Add firewall ports
+#   ansible.posix.firewalld:
+#     zone: public
+#     port: 8080/tcp
+#     permanent: yes
+#     immediate: yes
+#     state: enabled
+#     ignore_errors: true

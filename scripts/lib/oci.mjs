@@ -33,6 +33,7 @@ export async function listAdbDatabases(compartmentId) {
     if (exitCode !== 0) {
       exitWithError(stderr);
     }
+    if (!stdout.length) return [];
     return JSON.parse(stdout.trim()).data;
   } catch (error) {
     exitWithError(`Error: download wallet ${error.stderr}`);
@@ -41,7 +42,7 @@ export async function listAdbDatabases(compartmentId) {
 
 export async function downloadAdbWallet(adbId, walletFilePath, walletPassword) {
   try {
-    const { stdout, exitCode, stderr } =
+    const { exitCode, stderr } =
       await $`oci db autonomous-database generate-wallet \
       --autonomous-database-id ${adbId} \
       --file ${walletFilePath} \
@@ -163,4 +164,156 @@ export async function getUserId() {
     exitWithError(`User ${userEmail} not found`);
   }
   return userFound.id;
+}
+
+export async function createBucket(compartmentId, name) {
+  if (!compartmentId) {
+    exitWithError(`Compartment Id required to create bucket`);
+  }
+  if (!name) {
+    exitWithError(`Name required to create bucket`);
+  }
+  const namespace = await getNamespace();
+  try {
+    const { stdout, exitCode, stderr } = await $`oci os bucket create \
+        --namespace-name ${namespace} \
+        --compartment-id ${compartmentId} \
+        --name ${name}`;
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+    const { fingerprint } = JSON.parse(stdout.trim()).data;
+    return fingerprint;
+  } catch (error) {
+    exitWithError(error.stderr);
+  }
+}
+
+export async function deleteBucket(name) {
+  if (!name) {
+    exitWithError(`Name required to create bucket`);
+  }
+  const namespace = await getNamespace();
+  try {
+    const { exitCode, stderr } = await $`oci os bucket delete \
+      --bucket-name ${name} \
+      --namespace-name ${namespace} \
+      --empty --force`;
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+    return;
+  } catch (error) {
+    exitWithError(error.stderr);
+  }
+}
+
+export async function putObject(bucketName, objectName, filePath) {
+  if (!bucketName) {
+    exitWithError(`Bucket name required to put an object`);
+  }
+  if (!objectName) {
+    exitWithError(`Object name required to put an object`);
+  }
+  if (!filePath) {
+    exitWithError(`File path required to put an object`);
+  }
+  const namespace = await getNamespace();
+  try {
+    const { exitCode, stderr } = await $`oci os object put \
+      --force --name ${objectName} \
+      -bn ${bucketName} -ns ${namespace} \
+      --file ${filePath}`;
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+    return;
+  } catch (error) {
+    exitWithError(error.stderr);
+  }
+}
+
+export async function createPARObject(bucketName, objectName, expiration) {
+  if (!bucketName) {
+    exitWithError(`Bucket name required to create a PAR`);
+  }
+  if (!objectName) {
+    exitWithError(`Object name required to create a PAR`);
+  }
+  if (!expiration) {
+    exitWithError(`RFC 3339 expiration required to create a PAR`);
+  }
+  const namespace = await getNamespace();
+
+  try {
+    const { stdout, exitCode, stderr } = await $`oci os preauth-request create \
+        --bucket-name ${bucketName} \
+        --namespace-name ${namespace} \
+        --name ${objectName}_par \
+        --access-type ObjectRead \
+        --time-expires "${expiration}" \
+        --object-name ${objectName}`;
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+    const fullPath = JSON.parse(stdout.trim()).data["full-path"];
+    return fullPath;
+  } catch (error) {
+    exitWithError(error.stderr);
+  }
+}
+
+export async function listPARs(bucketName) {
+  if (!bucketName) {
+    exitWithError(`Bucket name required to list PARs`);
+  }
+  const namespace = await getNamespace();
+  try {
+    const { stdout, exitCode, stderr } = await $`oci os preauth-request list \
+      --bucket-name ${bucketName} \
+      --namespace-name ${namespace} \
+      --all`;
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+    if (!stdout.length) return [];
+    const pars = JSON.parse(stdout.trim()).data;
+    return pars;
+  } catch (error) {
+    exitWithError(error.stderr);
+  }
+}
+
+export async function listBuckets(compartmentId) {
+  if (!compartmentId) {
+    exitWithError(`Compartment Id required to create bucket`);
+  }
+  const namespace = await getNamespace();
+  try {
+    const { stdout, exitCode, stderr } = await $`oci os bucket list \
+      --compartment-id ${compartmentId} \
+      --namespace-name ${namespace} \
+      --all`;
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+    if (!stdout.length) return [];
+    const compartmentList = JSON.parse(stdout.trim()).data;
+    return compartmentList;
+  } catch (error) {
+    exitWithError(error.stderr);
+  }
+}
+
+export async function getBucket(compartmentId, name) {
+  if (!compartmentId) {
+    exitWithError(`Compartment Id required to create bucket`);
+  }
+  if (!name) {
+    exitWithError(`Name required to create bucket`);
+  }
+  const namespace = await getNamespace();
+
+  const listBucket = await listBuckets(compartmentId);
+  return listBucket.find((b) => b.name === name);
 }

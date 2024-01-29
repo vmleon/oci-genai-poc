@@ -28,6 +28,22 @@ variable "project_name" {
   default = "genai"
 }
 
+variable "web_artifact_url" {
+  type = string
+}
+
+variable "backend_artifact_url" {
+  type = string
+}
+
+variable "ansible_web_artifact_url" {
+  type = string
+}
+
+variable "ansible_backend_artifact_url" {
+  type = string
+}
+
 variable "instance_shape" {
   default = "VM.Standard.E4.Flex"
 }

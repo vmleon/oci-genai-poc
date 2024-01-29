@@ -62,7 +62,7 @@ resource "oci_load_balancer_backend_set" "backend_backendset" {
 
   health_checker {
     port                = "8080"
-    protocol            = "HTTP"
+    protocol            = "TCP"
     response_body_regex = ".*"
     url_path            = "/"
   }

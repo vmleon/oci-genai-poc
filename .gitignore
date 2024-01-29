@@ -1,4 +1,5 @@
 .certs
+.artifacts
 .env.json
 
 # Logs

@@ -2,11 +2,14 @@ import { Container, Typography } from "@mui/material";
 import { StompProvider } from "./stompHook";
 import Chat from "./Chat";
 
+const WEBSOCKET_BACKEND_URL = import.meta.env.WEBSOCKET_BACKEND_URL;
+
 function App() {
   return (
     <StompProvider
       config={{
-        brokerURL: WEBSOCKET_BACKEND_URL || "ws://localhost:8080/websocket",
+        brokerURL:
+          WEBSOCKET_BACKEND_URL || `wss://${window.location.host}/websocket`,
       }}
     >
       <Container>

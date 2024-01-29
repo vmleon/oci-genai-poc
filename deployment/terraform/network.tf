@@ -1,3 +1,18 @@
+# TODO: CIDR blocks
+locals {
+#   bastion_subnet_prefix = cidrsubnet(var.vcn_cidr, var.subnet_cidr_offset, 0)
+#   private_subnet_prefix = cidrsubnet(var.vcn_cidr, var.subnet_cidr_offset, 1)
+
+#   ad = data.oci_identity_availability_domain.ad.name
+
+#   tcp_protocol  = "6"
+#   all_protocols = "all"
+  anywhere      = "0.0.0.0/0"
+}
+
+# TODO: Bastion subnet example
+# https://github.com/oracle/terraform-provider-oci/blob/master/examples/networking/nat_gateway/nat_gateway.tf
+
 resource "oci_core_virtual_network" "vcn" {
   compartment_id = var.compartment_ocid
   cidr_blocks    = ["10.0.0.0/16"]
@@ -11,6 +26,12 @@ resource "oci_core_internet_gateway" "internet_gateway" {
   vcn_id         = oci_core_virtual_network.vcn.id
 }
 
+resource "oci_core_nat_gateway" "nat_gateway" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "nat_${var.project_name}_${random_string.deploy_id.result}"
+}
+
 resource "oci_core_default_route_table" "default_route_table" {
   manage_default_resource_id = oci_core_virtual_network.vcn.default_route_table_id
   display_name               = "DefaultRouteTable"
@@ -19,6 +40,18 @@ resource "oci_core_default_route_table" "default_route_table" {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
     network_entity_id = oci_core_internet_gateway.internet_gateway.id
+  }
+}
+
+resource "oci_core_route_table" "route_private" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "route_private"
+
+  route_rules {
+    destination       = local.anywhere
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_nat_gateway.nat_gateway.id
   }
 }
 
@@ -40,9 +73,8 @@ resource "oci_core_subnet" "privatesubnet" {
   display_name      = "private_subnet_${var.project_name}_${random_string.deploy_id.result}"
   dns_label         = "private"
   prohibit_public_ip_on_vnic = true
-  prohibit_internet_ingress = true
   security_list_ids = [oci_core_virtual_network.vcn.default_security_list_id, oci_core_security_list.private_security_list.id]
-  route_table_id    = oci_core_virtual_network.vcn.default_route_table_id
+  route_table_id    = oci_core_route_table.route_private.id
   dhcp_options_id   = oci_core_virtual_network.vcn.default_dhcp_options_id
 }
 

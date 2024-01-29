@@ -1,3 +1,14 @@
+locals {
+  web_cloud_init_content = templatefile("${path.module}/userdata/web_bootstrap.tftpl", {
+    web_par_full_path = var.web_artifact_url
+    ansible_web_par_full_path = var.ansible_web_artifact_url
+  })
+  backend_cloud_init_content = templatefile("${path.module}/userdata/backend_bootstrap.tftpl", {
+    backend_jar_par_full_path = var.backend_artifact_url
+    ansible_backend_par_full_path = var.ansible_backend_artifact_url
+  })
+}
+
 data "oci_core_images" "ol8_images" {
   compartment_id           = var.compartment_ocid
   shape                    = var.instance_shape
@@ -16,6 +27,7 @@ resource "oci_core_instance" "web" {
 
   metadata = {
     ssh_authorized_keys = var.ssh_public_key
+    user_data           = base64encode(local.web_cloud_init_content)
   }
 
   shape_config {
@@ -49,6 +61,7 @@ resource "oci_core_instance" "backend" {
 
   metadata = {
     ssh_authorized_keys = var.ssh_public_key
+    user_data           = base64encode(local.backend_cloud_init_content)
   }
 
   shape_config {
