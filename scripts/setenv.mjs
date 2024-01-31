@@ -5,7 +5,6 @@ import {
   setVariableFromEnvOrPrompt,
   writeEnvJson,
   readEnvJson,
-  exitWithError,
 } from "./lib/utils.mjs";
 import {
   getNamespace,
@@ -105,44 +104,4 @@ async function createCerts() {
     certPrivateKey: path.join(certPath, "tls.key"),
   };
   await writeEnvJson(properties);
-}
-
-async function generateTFVars() {
-  const {
-    compartmentId,
-    compartmentName,
-    regionName,
-    tenancyId,
-    publicKeyContent,
-    certFullchain,
-    certPrivateKey,
-  } = await readEnvJson();
-  const tfVarsPath = "deployment/terraform/terraform.tfvars";
-
-  const tfvarsTemplate = await fs.readFile(`${tfVarsPath}.mustache`, "utf-8");
-
-  const output = Mustache.render(tfvarsTemplate, {
-    tenancyId,
-    regionName,
-    compartmentId,
-    ssh_public_key: publicKeyContent,
-    cert_fullchain: certFullchain,
-    cert_private_key: certPrivateKey,
-  });
-
-  console.log(
-    `Terraform will deploy resources in ${chalk.green(
-      regionName
-    )} in compartment ${
-      compartmentName ? chalk.green(compartmentName) : chalk.green("root")
-    }`
-  );
-
-  await fs.writeFile(tfVarsPath, output);
-
-  console.log(`File ${chalk.green(tfVarsPath)} created`);
-
-  console.log(`1. ${chalk.yellow("cd deployment/terraform/")}`);
-  console.log(`2. ${chalk.yellow("terraform init")}`);
-  console.log(`3. ${chalk.yellow("terraform apply -auto-approve")}`);
 }

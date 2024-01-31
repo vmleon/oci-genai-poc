@@ -56,7 +56,7 @@ resource "oci_load_balancer_backend" "frontend_backend" {
 }
 
 resource "oci_load_balancer_backend_set" "backend_backendset" {
-  name             = "backendend_backendset"
+  name             = "backend_backendset"
   load_balancer_id = oci_load_balancer.lb.id
   policy           = "ROUND_ROBIN"
 

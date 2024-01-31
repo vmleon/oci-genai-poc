@@ -2,11 +2,7 @@
 locals {
 #   bastion_subnet_prefix = cidrsubnet(var.vcn_cidr, var.subnet_cidr_offset, 0)
 #   private_subnet_prefix = cidrsubnet(var.vcn_cidr, var.subnet_cidr_offset, 1)
-
-#   ad = data.oci_identity_availability_domain.ad.name
-
-#   tcp_protocol  = "6"
-#   all_protocols = "all"
+  tcp_protocol  = "6"
   anywhere      = "0.0.0.0/0"
 }
 
@@ -37,7 +33,7 @@ resource "oci_core_default_route_table" "default_route_table" {
   display_name               = "DefaultRouteTable"
 
   route_rules {
-    destination       = "0.0.0.0/0"
+    destination       = local.anywhere
     destination_type  = "CIDR_BLOCK"
     network_entity_id = oci_core_internet_gateway.internet_gateway.id
   }
@@ -84,8 +80,8 @@ resource "oci_core_security_list" "http_security_list" {
   display_name   = "HTTP Security List"
 
   ingress_security_rules {
-    protocol  = "6" // tcp
-    source    = "0.0.0.0/0"
+    protocol  = local.tcp_protocol
+    source    = local.anywhere
     stateless = false
 
     tcp_options {
@@ -95,8 +91,8 @@ resource "oci_core_security_list" "http_security_list" {
   }
 
   ingress_security_rules {
-    protocol  = "6" // tcp
-    source    = "0.0.0.0/0"
+    protocol  = local.tcp_protocol
+    source    = local.anywhere
     stateless = false
 
     tcp_options {
@@ -113,7 +109,7 @@ resource "oci_core_security_list" "private_security_list" {
   display_name   = "Private Security List"
 
   ingress_security_rules {
-    protocol  = "6" // tcp
+    protocol  = local.tcp_protocol
     source    = oci_core_subnet.publicsubnet.cidr_block
     stateless = false
 
@@ -124,7 +120,7 @@ resource "oci_core_security_list" "private_security_list" {
   }
 
   ingress_security_rules {
-    protocol  = "6" // tcp
+    protocol  = local.tcp_protocol
     source    = oci_core_subnet.publicsubnet.cidr_block
     stateless = false
 

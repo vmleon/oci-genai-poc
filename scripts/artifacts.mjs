@@ -1,6 +1,6 @@
 #!/usr/bin/env zx
 
-import { readEnvJson, writeEnvJson } from "./lib/utils.mjs";
+import { exitWithError, readEnvJson, writeEnvJson } from "./lib/utils.mjs";
 import {
   createBucket,
   createPARObject,
