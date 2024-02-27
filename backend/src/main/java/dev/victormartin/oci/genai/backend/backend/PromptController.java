@@ -13,7 +13,7 @@ public class PromptController {
 	Logger logger = LoggerFactory.getLogger(PromptController.class);
 
 	@Autowired
-	GenAI genAI;
+	OCIGenAIService genAI;
 
 	@MessageMapping("/prompt")
 	@SendToUser("/queue/answer")
