@@ -22,7 +22,7 @@ resource "oci_core_instance" "web" {
   count               = var.web_node_count
   availability_domain = lookup(data.oci_identity_availability_domains.ads.availability_domains[count.index % 3], "name")
   compartment_id      = var.compartment_ocid
-  display_name        = "web_${count.index}_${var.project_name}_${random_string.deploy_id.result}"
+  display_name        = "web_${count.index}_${local.project_name}_${local.deploy_id}"
   shape               = var.instance_shape
 
   metadata = {
@@ -56,7 +56,7 @@ resource "oci_core_instance" "backend" {
   count               = var.backend_node_count
   availability_domain = lookup(data.oci_identity_availability_domains.ads.availability_domains[count.index % 3], "name")
   compartment_id      = var.compartment_ocid
-  display_name        = "backend_${count.index}_${var.project_name}_${random_string.deploy_id.result}"
+  display_name        = "backend_${count.index}_${local.project_name}_${local.deploy_id}"
   shape               = var.instance_shape
 
   metadata = {

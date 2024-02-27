@@ -12,20 +12,20 @@ locals {
 resource "oci_core_virtual_network" "vcn" {
   compartment_id = var.compartment_ocid
   cidr_blocks    = ["10.0.0.0/16"]
-  display_name   = "${var.project_name} ${random_string.deploy_id.result}"
-  dns_label      = "${var.project_name}${random_string.deploy_id.result}"
+  display_name   = "${local.project_name} ${local.deploy_id}"
+  dns_label      = "${local.project_name}${local.deploy_id}"
 }
 
 resource "oci_core_internet_gateway" "internet_gateway" {
   compartment_id = var.compartment_ocid
-  display_name   = "ig_${var.project_name}_${random_string.deploy_id.result}"
+  display_name   = "ig_${local.project_name}_${local.deploy_id}"
   vcn_id         = oci_core_virtual_network.vcn.id
 }
 
 resource "oci_core_nat_gateway" "nat_gateway" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.vcn.id
-  display_name   = "nat_${var.project_name}_${random_string.deploy_id.result}"
+  display_name   = "nat_${local.project_name}_${local.deploy_id}"
 }
 
 resource "oci_core_default_route_table" "default_route_table" {
@@ -55,7 +55,7 @@ resource "oci_core_subnet" "publicsubnet" {
   cidr_block        = "10.0.1.0/24"
   compartment_id    = var.compartment_ocid
   vcn_id            = oci_core_virtual_network.vcn.id
-  display_name      = "public_subnet_${var.project_name}_${random_string.deploy_id.result}"
+  display_name      = "public_subnet_${local.project_name}_${local.deploy_id}"
   dns_label         = "public"
   security_list_ids = [oci_core_virtual_network.vcn.default_security_list_id, oci_core_security_list.http_security_list.id]
   route_table_id    = oci_core_virtual_network.vcn.default_route_table_id
@@ -66,7 +66,7 @@ resource "oci_core_subnet" "privatesubnet" {
   cidr_block        = "10.0.2.0/24"
   compartment_id    = var.compartment_ocid
   vcn_id            = oci_core_virtual_network.vcn.id
-  display_name      = "private_subnet_${var.project_name}_${random_string.deploy_id.result}"
+  display_name      = "private_subnet_${local.project_name}_${local.deploy_id}"
   dns_label         = "private"
   prohibit_public_ip_on_vnic = true
   security_list_ids = [oci_core_virtual_network.vcn.default_security_list_id, oci_core_security_list.private_security_list.id]

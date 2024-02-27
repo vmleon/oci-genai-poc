@@ -2,7 +2,7 @@ import { Container, Typography } from "@mui/material";
 import { StompProvider } from "./stompHook";
 import Chat from "./Chat";
 
-const WEBSOCKET_BACKEND_URL = import.meta.env.WEBSOCKET_BACKEND_URL;
+const WEBSOCKET_BACKEND_URL = import.meta.env.VITE_WEBSOCKET_BACKEND_URL;
 
 function App() {
   return (

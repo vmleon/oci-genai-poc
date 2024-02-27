@@ -7,8 +7,8 @@ export async function createSelfSignedCert(outputPath = ".") {
   const certPath = path.normalize(path.join(outputPath, "tls.crt"));
   try {
     await $`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ${keyPath} -out ${certPath} -subj "/CN=nginxsvc/O=nginxsvc"`;
-    console.log(`Key written to: ${chalk.green(keyPath)}`);
-    console.log(`Cert written to: ${chalk.green(certPath)}`);
+    console.log(`Cert Key created: ${chalk.green(keyPath)}`);
+    console.log(`Cert created: ${chalk.green(certPath)}`);
   } catch (error) {
     exitWithError(error.stderr);
   }

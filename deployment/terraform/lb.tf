@@ -28,7 +28,7 @@ resource "oci_load_balancer" "lb" {
     minimum_bandwidth_in_mbps = var.lb_shape_min_bandwidth
   }
 
-  display_name = "${var.project_name} ${random_string.deploy_id.result}"
+  display_name = "${local.project_name} ${local.deploy_id}"
   reserved_ips {
     id = oci_core_public_ip.reserved_ip.id
   }

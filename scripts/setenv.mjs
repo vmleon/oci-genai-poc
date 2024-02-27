@@ -1,6 +1,5 @@
 #!/usr/bin/env zx
 
-import Mustache from "mustache";
 import {
   setVariableFromEnvOrPrompt,
   writeEnvJson,
@@ -91,6 +90,7 @@ async function createSSHKeys(name) {
     publicKeyContent,
     publicKeyPath: `${sshPathParam}.pub`,
   };
+  console.log(`SSH key pair created: ${chalk.green(sshPathParam)}`);
   await writeEnvJson(properties);
 }
 

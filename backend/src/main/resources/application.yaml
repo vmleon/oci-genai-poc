@@ -1,0 +1,12 @@
+spring:
+  main:
+    banner-mode: "off"
+
+genai:
+  endpoint: "https://inference.generativeai.REGION_CODE_NAME.oci.oraclecloud.com"
+  region: "REGION_CODE_NAME"
+  config:
+    location: "~/.oci/config"
+    profile: "DEFAULT"
+  compartment_id: "COMPARTMENT_ID"
+  model_id: "MODEL_ID"
