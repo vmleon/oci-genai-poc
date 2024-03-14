@@ -1,12 +1,12 @@
 
 resource "time_sleep" "wait_for_web_bastion_plugin" {
   depends_on = [oci_core_instance.web]
-  create_duration = "40m"
+  create_duration = "10m"
 }
 
 resource "time_sleep" "wait_for_backend_bastion_plugin" {
   depends_on = [oci_core_instance.backend]
-  create_duration = "40m"
+  create_duration = "10m"
 }
 
 resource "oci_bastion_bastion" "private_subnet_bastion" {
