@@ -8,8 +8,7 @@ function App() {
   return (
     <StompProvider
       config={{
-        brokerURL:
-          WEBSOCKET_BACKEND_URL || `wss://${window.location.host}/websocket`,
+        brokerURL: WEBSOCKET_BACKEND_URL || `${window.location.href}/websocket`,
       }}
     >
       <Container>

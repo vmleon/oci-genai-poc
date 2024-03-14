@@ -5,6 +5,7 @@ import com.oracle.bmc.ConfigFileReader;
 import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
+import com.oracle.bmc.auth.InstancePrincipalsAuthenticationDetailsProvider;
 import com.oracle.bmc.generativeaiinference.GenerativeAiInferenceClient;
 import com.oracle.bmc.retrier.RetryConfiguration;
 import jakarta.annotation.PostConstruct;
@@ -43,10 +44,8 @@ public class GenerativeAiInferenceClientConfig {
     @Bean
     @Profile("production")
     GenerativeAiInferenceClient instancePrincipalConfig() throws IOException {
-        // Configuring the AuthenticationDetailsProvider. It's assuming there is a default OCI config file
-        // "~/.oci/config", and a profile in that config with the name defined in CONFIG_PROFILE variable.
-        final ConfigFileReader.ConfigFile configFile =  ConfigFileReader.parse(CONFIG_LOCATION, CONFIG_PROFILE);
-        final AuthenticationDetailsProvider provider = new ConfigFileAuthenticationDetailsProvider(configFile);
+        final InstancePrincipalsAuthenticationDetailsProvider provider =
+                new InstancePrincipalsAuthenticationDetailsProvider.InstancePrincipalsAuthenticationDetailsProviderBuilder().build();
 
         // Set up Generative AI client with credentials and endpoint
         ClientConfiguration clientConfiguration =
@@ -57,7 +56,7 @@ public class GenerativeAiInferenceClientConfig {
         GenerativeAiInferenceClient generativeAiInferenceClient = new GenerativeAiInferenceClient(provider,
                 clientConfiguration);
         generativeAiInferenceClient.setEndpoint(ENDPOINT);
-        generativeAiInferenceClient.setRegion(region);
+        generativeAiInferenceClient.setRegion(provider.getRegion());
         return generativeAiInferenceClient;
     }
     @Bean

@@ -1,7 +1,7 @@
 ---
-- name: Install JDK 17
+- name: Install JDK 21
   ansible.builtin.package:
-    name: jdk-17
+    name: jdk-21
     update_cache: yes
 - name: Create Backend config directory
   ansible.builtin.file:
@@ -10,10 +10,10 @@
     owner: opc
     group: opc
     mode: '0744'
-- name: Copy application.properties file
-  ansible.builtin.copy:
-    src: files/application.properties
-    dest: "{{backend_dest_directory}}/config/application.properties"
+- name: Copy application.yaml file
+  ansible.builtin.template:
+    src: files/application.yaml.j2
+    dest: "{{backend_dest_directory}}/config/application.yaml"
     owner: opc
     group: opc
     mode: '0640'
@@ -40,11 +40,10 @@
   ansible.builtin.systemd:
     name: backend
     enabled: yes
-- name: Disable firewalld (workaround ansible firewalld issue)
-  ansible.builtin.systemd_service:
-    name: firewalld
-    state: stopped
-    enabled: false
+- name: Stop firewalld
+  ansible.builtin.command: systemctl stop firewalld
+- name: Disable firewalld
+  ansible.builtin.command: systemctl disable firewalld
 # - name: Add firewall ports
 #   ansible.posix.firewalld:
 #     zone: public

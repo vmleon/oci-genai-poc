@@ -6,6 +6,10 @@ locals {
   backend_cloud_init_content = templatefile("${path.module}/userdata/backend_bootstrap.tftpl", {
     backend_jar_par_full_path = var.backend_artifact_url
     ansible_backend_par_full_path = var.ansible_backend_artifact_url
+    region_code_name = var.region
+    compartment_id = var.compartment_ocid
+    genai_endpoint = var.genai_endpoint
+    genai_model_id = var.genai_model_id
   })
 }
 
@@ -30,6 +34,13 @@ resource "oci_core_instance" "web" {
     user_data           = base64encode(local.web_cloud_init_content)
   }
 
+  agent_config {
+    plugins_config {
+        desired_state = "ENABLED"
+        name = "Bastion"
+    }
+  }
+
   shape_config {
     ocpus         = 1
     memory_in_gbs = 8
@@ -52,6 +63,12 @@ resource "oci_core_instance" "web" {
   }
 }
 
+data "oci_computeinstanceagent_instance_agent_plugin" "web_instance_agent_plugin" {
+    instanceagent_id = oci_core_instance.web[0].id
+    compartment_id = var.compartment_ocid
+    plugin_name = "Bastion"
+}
+
 resource "oci_core_instance" "backend" {
   count               = var.backend_node_count
   availability_domain = lookup(data.oci_identity_availability_domains.ads.availability_domains[count.index % 3], "name")
@@ -62,6 +79,13 @@ resource "oci_core_instance" "backend" {
   metadata = {
     ssh_authorized_keys = var.ssh_public_key
     user_data           = base64encode(local.backend_cloud_init_content)
+  }
+
+  agent_config {
+    plugins_config {
+        desired_state = "ENABLED"
+        name = "Bastion"
+    }
   }
 
   shape_config {
@@ -85,4 +109,10 @@ resource "oci_core_instance" "backend" {
   timeouts {
     create = "60m"
   }
+}
+
+data "oci_computeinstanceagent_instance_agent_plugin" "backend_instance_agent_plugin" {
+    instanceagent_id = oci_core_instance.backend[0].id
+    compartment_id = var.compartment_ocid
+    plugin_name = "Bastion"
 }

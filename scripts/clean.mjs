@@ -20,3 +20,5 @@ if (bucket) {
 properties.artifacts = {};
 properties.bucketName = "";
 await writeEnvJson(properties);
+
+await $`rm -rf ./.artifacts`;

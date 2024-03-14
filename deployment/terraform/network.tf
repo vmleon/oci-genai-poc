@@ -3,7 +3,6 @@ locals {
 #   bastion_subnet_prefix = cidrsubnet(var.vcn_cidr, var.subnet_cidr_offset, 0)
 #   private_subnet_prefix = cidrsubnet(var.vcn_cidr, var.subnet_cidr_offset, 1)
   tcp_protocol  = "6"
-  anywhere      = "0.0.0.0/0"
 }
 
 # TODO: Bastion subnet example

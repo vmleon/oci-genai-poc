@@ -23,6 +23,7 @@ await setTenancyEnv();
 await setNamespaceEnv();
 await setRegionEnv();
 await setCompartmentEnv();
+await setGenAIModelEnv();
 await createSSHKeys("genai");
 await createCerts();
 
@@ -82,11 +83,21 @@ async function printRegionNames(regions) {
   );
 }
 
+async function setGenAIModelEnv() {
+  const genaiModelValue = await setVariableFromEnvOrPrompt(
+    "OCI_GENAI_MODEL_ID",
+    "OCI Gen AI Model ID"
+  );
+  properties = { ...properties, genAiModel: genaiModelValue };
+  await writeEnvJson(properties);
+}
+
 async function createSSHKeys(name) {
   const sshPathParam = path.join(os.homedir(), ".ssh", name);
   const publicKeyContent = await createSSHKeyPair(sshPathParam);
   properties = {
     ...properties,
+    privateKeyPath: sshPathParam,
     publicKeyContent,
     publicKeyPath: `${sshPathParam}.pub`,
   };

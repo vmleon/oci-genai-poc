@@ -20,11 +20,10 @@
     src: "{{web_dest_directory}}/"
     dest: /usr/share/nginx/html
   notify: restart nginx
-- name: Disable firewalld (workaround ansible firewalld issue)
-  ansible.builtin.systemd_service:
-    name: firewalld
-    state: stopped
-    enabled: false
+- name: Stop firewalld
+  ansible.builtin.command: systemctl stop firewalld
+- name: Disable firewalld
+  ansible.builtin.command: systemctl disable firewalld
 # - name: Add firewall ports
 #   ansible.posix.firewalld:
 #     zone: public

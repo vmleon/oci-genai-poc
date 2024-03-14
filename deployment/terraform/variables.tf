@@ -60,3 +60,11 @@ variable "artifacts_par_expiration_in_days" {
   type = number
   default = 7
 }
+
+variable "genai_endpoint" {
+  type = string
+}
+
+variable "genai_model_id" {
+  type = string
+}

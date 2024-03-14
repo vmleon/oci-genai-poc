@@ -1,5 +1,7 @@
 # OCI Gen AI POC
 
+Run locally with [Local](LOCAL.md)
+
 ## Build artifacts
 
 ### Build Java Application:
@@ -43,21 +45,29 @@ cd scripts/ && npm install && cd ..
 ### Set the environment variables
 
 ```bash
-zx scripts/setenv.mjs
+npx zx scripts/setenv.mjs
 ```
 
 > Answer the Compartment name where you want to deploy the infrastructure. Root compartment is the default.
 
+> Answer the OCI Gen AI Model ID that you want to use.
+>
+> Pick one from the following command:
+>
+> ```
+> oci generative-ai model-collection list-models --compartment-id COMPARTMENT_ID --region us-chicago-1 | jq '.data.items | select(.[].capabilities[] | contains("TEXT_GENERATION"))'
+> ```
+
 ### Collect and deliver the artifacts
 
 ```bash
-zx scripts/artifacts.mjs
+npx zx scripts/artifacts.mjs
 ```
 
 ### Build TF Vars file
 
 ```bash
-zx scripts/tfvars.mjs
+npx zx scripts/tfvars.mjs
 ```
 
 ## Deploy
@@ -86,6 +96,14 @@ terraform apply --auto-approve
 
 ```bash
 cd ../..
+```
+
+## Debug
+
+If you need to connect with the compute instances, there is two bastion sessions created for backend 0 and web 0 instances. To see the command, type the following command and copy and paste the one you need.
+
+```bash
+npx zx scripts/bastion.mjs
 ```
 
 ## Issues

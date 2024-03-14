@@ -1,0 +1,14 @@
+spring:
+  main:
+    banner-mode: "off"
+  profiles:
+    active: production
+
+genai:
+  endpoint: "{{genai_endpoint}}"
+  region: "{{region_code_name}}"
+  config:
+    location: ""
+    profile: ""
+  compartment_id: "{{compartment_id}}"
+  model_id: "{{genai_model_id}}"
