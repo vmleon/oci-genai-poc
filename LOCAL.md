@@ -20,6 +20,8 @@ Run locally with
 cd backend
 ```
 
+Edit `/backend/src/main/resources/application.yaml` to have the correct values.
+
 ```bash
 ./gradlew bootRun
 ```
