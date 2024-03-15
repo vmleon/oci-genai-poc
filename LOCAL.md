@@ -2,19 +2,19 @@
 
 ## Web
 
-Run locally with
+Run locally in a terminal with:
 
 ```bash
 cd web
 ```
 
 ```bash
-VITE_WEBSOCKET_BACKEND_URL="/websocket" npm run dev
+npm run dev
 ```
 
 ## Backend
 
-Run locally with
+Run locally on another terminal with:
 
 ```bash
 cd backend

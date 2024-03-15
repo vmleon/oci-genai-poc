@@ -1,6 +1,6 @@
 # OCI Gen AI POC
 
-Run locally with [Local](LOCAL.md)
+Run locally with these steps [Local](LOCAL.md)
 
 ## Build artifacts
 

@@ -2,13 +2,18 @@ import { Container, Typography } from "@mui/material";
 import { StompProvider } from "./stompHook";
 import Chat from "./Chat";
 
-const WEBSOCKET_BACKEND_URL = import.meta.env.VITE_WEBSOCKET_BACKEND_URL;
+const protocol = window.location.protocol === "http:" ? "ws://" : "wss://";
+const hostname =
+  window.location.hostname === "localhost"
+    ? "localhost:8080"
+    : window.location.hostname;
+const brokerURL = `${protocol}${hostname}/websocket`;
 
 function App() {
   return (
     <StompProvider
       config={{
-        brokerURL: WEBSOCKET_BACKEND_URL || `${window.location.href}/websocket`,
+        brokerURL: brokerURL,
       }}
     >
       <Container>

@@ -1,7 +1,6 @@
 #!/usr/bin/env zx
 
-import { readEnvJson, writeEnvJson } from "./lib/utils.mjs";
-import { deleteBucket, getBucket } from "./lib/oci.mjs";
+import { readEnvJson } from "./lib/utils.mjs";
 import { getOutputValues } from "./lib/terraform.mjs";
 
 const shell = process.env.SHELL | "/bin/zsh";
