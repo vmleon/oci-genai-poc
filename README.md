@@ -54,8 +54,11 @@ npx zx scripts/setenv.mjs
 >
 > Pick one from the following command:
 >
-> ```
-> oci generative-ai model-collection list-models --compartment-id COMPARTMENT_ID --region us-chicago-1 | jq '.data.items | select(.[].capabilities[] | contains("TEXT_GENERATION"))'
+> ```bash
+> oci generative-ai model-collection list-models \
+>   --compartment-id COMPARTMENT_ID \
+>   --region us-chicago-1 | jq \
+>       '.data.items | select(.[].capabilities[] | contains("TEXT_GENERATION"))'
 > ```
 
 ### Collect and deliver the artifacts
@@ -82,12 +85,6 @@ Init Terraform providers:
 terraform init
 ```
 
-Plan the deployment:
-
-```bash
-terraform plan
-```
-
 Apply deployment:
 
 ```bash
@@ -98,12 +95,34 @@ terraform apply --auto-approve
 cd ../..
 ```
 
-## Debug
+## SSH into machines
 
 If you need to connect with the compute instances, there is two bastion sessions created for backend 0 and web 0 instances. To see the command, type the following command and copy and paste the one you need.
 
 ```bash
 npx zx scripts/bastion.mjs
+```
+
+## Clean up
+
+Destroy infrastructure with Terraform.
+
+```bash
+cd deployment/terraform
+```
+
+```bash
+terraform destroy -auto-approve
+```
+
+```bash
+cd ../..
+```
+
+Clean up the artifacts on Object Storage
+
+```bash
+npx zx scripts/clean.mjs
 ```
 
 ## Issues
