@@ -21,6 +21,7 @@ tar xzf /home/opc/web.tar.gz -C /home/opc/web | tee -a /home/opc/bootstrap.log &
 chown -R opc:opc /home/opc/web
 
 # Get ansible_web
+
 curl -o /home/opc/ansible_web.tar.gz "${ansible_web_par_full_path}" | tee -a /home/opc/bootstrap.log
 
 # Extract ansible_web

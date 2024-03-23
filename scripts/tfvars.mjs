@@ -22,10 +22,11 @@ async function generateTFVars() {
     artifacts,
   } = await readEnvJson();
 
-  const webArtifactUrl = artifacts["web"].fullPath;
-  const backendArtifactUrl = artifacts["backend_jar"].fullPath;
-  const ansibleWebArtifactUrl = artifacts["ansible_web"].fullPath;
-  const ansibleBackendArtifactUrl = artifacts["ansible_backend"].fullPath;
+  const webArtifactUrl = artifacts["web.tar.gz"].fullPath;
+  const backendArtifactUrl = artifacts["backend_jar.tar.gz"].fullPath;
+  const ansibleWebArtifactUrl = artifacts["ansible_web.tar.gz"].fullPath;
+  const ansibleBackendArtifactUrl =
+    artifacts["ansible_backend.tar.gz"].fullPath;
 
   const genaiEndpoint = `https://inference.generativeai.${regionName}.oci.oraclecloud.com`;
 

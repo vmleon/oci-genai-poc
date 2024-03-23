@@ -4,6 +4,7 @@ import { exitWithError, readEnvJson, writeEnvJson } from "./lib/utils.mjs";
 import {
   createBucket,
   createPARObject,
+  deletePAR,
   getBucket,
   listPARs,
   putObject,
@@ -77,18 +78,27 @@ async function deliverArtifacts() {
   }
 
   const objects = [
-    { objectName: "backend_jar", filePath: ".artifacts/backend_jar.tar.gz" },
-    { objectName: "web", filePath: ".artifacts/web.tar.gz" },
     {
-      objectName: "ansible_backend",
+      objectName: "backend_jar.tar.gz",
+      filePath: ".artifacts/backend_jar.tar.gz",
+    },
+    { objectName: "web.tar.gz", filePath: ".artifacts/web.tar.gz" },
+    {
+      objectName: "ansible_backend.tar.gz",
       filePath: ".artifacts/ansible_backend.tar.gz",
     },
-    { objectName: "ansible_web", filePath: ".artifacts/ansible_web.tar.gz" },
+    {
+      objectName: "ansible_web.tar.gz",
+      filePath: ".artifacts/ansible_web.tar.gz",
+    },
   ];
 
   const expiration = moment().add(expirationOffsetInDays, "days").toISOString();
 
   const pars = await listPARs(bucketName);
+  pars.forEach(async (par) => {
+    await deletePAR(bucketName, par.id);
+  });
 
   objects.forEach(async ({ objectName, filePath }) => {
     if (!(await fs.pathExists(filePath))) {
@@ -100,12 +110,7 @@ async function deliverArtifacts() {
         bucketName
       )} as ${chalk.green(objectName)}`
     );
-    const fullPath = await createPARIfNotExist(
-      pars,
-      bucketName,
-      objectName,
-      expiration
-    );
+    const fullPath = await createPAR(bucketName, objectName, expiration);
     properties.artifacts[objectName] = { ...properties.artifacts[objectName] };
     if (fullPath) {
       properties.artifacts[objectName].fullPath = fullPath;
@@ -114,16 +119,7 @@ async function deliverArtifacts() {
   });
 }
 
-async function createPARIfNotExist(pars, bucketName, objectName, expiration) {
-  const existingPar = pars.find((par) => par["object-name"] === objectName);
-  if (existingPar) {
-    console.log(
-      `Existing PAR for ${chalk.green(
-        objectName
-      )} and will expire on the ${chalk.green(existingPar["time-expires"])}`
-    );
-    return;
-  }
+async function createPAR(bucketName, objectName, expiration) {
   const fullPath = await createPARObject(bucketName, objectName, expiration);
   console.log(
     `PAR created for ${chalk.green(

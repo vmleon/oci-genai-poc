@@ -284,6 +284,27 @@ export async function listPARs(bucketName) {
   }
 }
 
+export async function deletePAR(bucketName, id) {
+  if (!bucketName) {
+    exitWithError(`Bucket name required to delete a PAR`);
+  }
+  if (!id) {
+    exitWithError(`PAR id required to delete a PAR`);
+  }
+  const namespace = await getNamespace();
+  try {
+    const { exitCode, stderr } = await $`oci os preauth-request delete \
+      --bucket-name ${bucketName} \
+      --namespace-name ${namespace} \
+      --par-id ${id}`;
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+  } catch (error) {
+    exitWithError(error.stderr);
+  }
+}
+
 export async function listBuckets(compartmentId) {
   if (!compartmentId) {
     exitWithError(`Compartment Id required to create bucket`);

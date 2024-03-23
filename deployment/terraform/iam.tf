@@ -9,14 +9,14 @@ resource "oci_identity_dynamic_group" "genai_dynamic_group" {
   name           = local.dynamic_group_name
   compartment_id = var.tenancy_ocid
   description    = "${local.project_name} ${local.deploy_id} Dynamic Group"
-  matching_rule  = "ALL { resource.type = 'instance-family', resource.compartment.id = '${var.compartment_ocid}'}"
+  matching_rule  = "ANY { instance.compartment.id = '${var.compartment_ocid}' }"
 }
 
 resource "oci_identity_policy" "allow-genai-policy" {
   provider       = oci.home_region
   compartment_id = var.tenancy_ocid
   name           = local.dynamic_group_name
-  description    = "Allow dynamic group to manage gen ai service for ${local.project_name} ${local.deploy_id}"
+  description    = "Allow dynamic group ${local.dynamic_group_name} to manage gen ai service for ${local.project_name} ${local.deploy_id}"
   statements = [
     "allow dynamic-group ${local.dynamic_group_name} to manage generative-ai-family in compartment id ${var.compartment_ocid}"
   ]

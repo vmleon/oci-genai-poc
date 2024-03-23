@@ -9,6 +9,8 @@ import com.oracle.bmc.auth.InstancePrincipalsAuthenticationDetailsProvider;
 import com.oracle.bmc.generativeaiinference.GenerativeAiInferenceClient;
 import com.oracle.bmc.retrier.RetryConfiguration;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,8 @@ import java.io.IOException;
 
 @Configuration
 public class GenerativeAiInferenceClientConfig {
+
+    Logger logger = LoggerFactory.getLogger(GenerativeAiInferenceClientConfig.class);
 
     @Value("${genai.endpoint}")
     private String ENDPOINT;
@@ -37,7 +41,7 @@ public class GenerativeAiInferenceClientConfig {
 
     @PostConstruct
     private void postConstruct() {
-        System.out.println("regionCode: " + regionCode);
+        logger.info("Region Code: " + regionCode);
         region = Region.fromRegionCode(regionCode);
     }
 

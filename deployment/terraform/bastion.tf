@@ -1,12 +1,12 @@
 
 resource "time_sleep" "wait_for_web_bastion_plugin" {
-  depends_on = [data.oci_computeinstanceagent_instance_agent_plugin.web_instance_agent_plugin]
-  create_duration = "1m"
+  depends_on = [oci_core_instance.web, data.oci_computeinstanceagent_instance_agent_plugin.web_instance_agent_plugin]
+  create_duration = "12m"
 }
 
 resource "time_sleep" "wait_for_backend_bastion_plugin" {
-  depends_on = [data.oci_computeinstanceagent_instance_agent_plugin.backend_instance_agent_plugin]
-  create_duration = "1m"
+  depends_on = [oci_core_instance.backend, data.oci_computeinstanceagent_instance_agent_plugin.backend_instance_agent_plugin]
+  create_duration = "12m"
 }
 
 resource "oci_bastion_bastion" "private_subnet_bastion" {
