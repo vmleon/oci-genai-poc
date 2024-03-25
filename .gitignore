@@ -1,6 +1,7 @@
 .certs
 .artifacts
 .env.json
+*.bkp
 
 # Logs
 logs
