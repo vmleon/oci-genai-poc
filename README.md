@@ -1,5 +1,9 @@
 # OCI Gen AI POC
 
+![Architecture](./images/architecture.png)
+
+## Local deployment
+
 Run locally with these steps [Local](LOCAL.md)
 
 ## Build artifacts
