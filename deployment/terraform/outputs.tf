@@ -9,6 +9,10 @@ output "deploy_id" {
   value = random_string.deploy_id.result
 }
 
+output "project" {
+  value = var.project_name
+}
+
 output "load_balancer" {
   value = oci_core_public_ip.reserved_ip.ip_address
 }
@@ -31,4 +35,13 @@ output "ssh_bastion_session_backend" {
 
 output "ssh_bastion_session_web" {
   value = oci_bastion_session.web_session.ssh_metadata.command
+}
+
+output "db_service" {
+  value = "${local.project_name}${local.deploy_id}"
+}
+
+output "db_password" {
+  value = random_password.adb_admin_password.result
+  sensitive = true
 }

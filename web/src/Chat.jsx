@@ -3,6 +3,9 @@ import { Box } from "@mui/material";
 import PromptInput from "./PromptInput";
 import Conversation from "./Conversation";
 import { useStomp } from "./stompHook";
+import { v4 as uuidv4 } from "uuid";
+
+const conversationId = uuidv4();
 
 function Chat() {
   const [conversation, setConversation] = useState([]);
@@ -31,7 +34,7 @@ function Chat() {
 
   useEffect(() => {
     if (isConnected && promptValue.length) {
-      send("/genai/prompt", { content: promptValue });
+      send("/genai/prompt", { conversationId, content: promptValue });
       setPromptValue("");
     }
     return () => {};

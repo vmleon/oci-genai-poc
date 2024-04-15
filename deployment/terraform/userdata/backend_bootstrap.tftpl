@@ -1,31 +1,41 @@
 #!/bin/bash
 
-touch /home/opc/bootstrap.log
-chown -R opc:opc /home/opc/bootstrap.log
+touch /home/opc/cloud-init.log
+chown -R opc:opc /home/opc/cloud-init.log
 
 # Update and upgrade repo
-dnf update -y | tee -a /home/opc/bootstrap.log
-dnf upgrade -y | tee -a /home/opc/bootstrap.log
+dnf update -y
+dnf upgrade -y
 
-# dnf install python3-firewall -y | tee -a /home/opc/bootstrap.log
+# dnf install python3-firewall -y | tee -a /home/opc/cloud-init.log
 
-dnf install ansible -y | tee -a /home/opc/bootstrap.log
+dnf install ansible -y | tee -a /home/opc/cloud-init.log
+
+# Get wallet
+cat "wallet_par_full_path: ${wallet_par_full_path}" | tee -a /home/opc/cloud-init.log
+curl "${wallet_par_full_path}" -o /home/opc/wallet.zip.b64 | tee -a /home/opc/cloud-init.log
+base64 -d /home/opc/wallet.zip.b64 > /home/opc/wallet.zip && rm -rf /home/opc/wallet.zip.b64
+
+# Extract wallet
+mkdir -p /home/opc/backend/wallet
+unzip /home/opc/wallet.zip -d /home/opc/backend/wallet | tee -a /home/opc/cloud-init.log
+chown -R opc:opc /home/opc/backend/wallet
 
 # Get backend_jar
-curl "${backend_jar_par_full_path}" -o /home/opc/backend_jar.tar.gz | tee -a /home/opc/bootstrap.log
+curl "${backend_jar_par_full_path}" -o /home/opc/backend_jar.tar.gz | tee -a /home/opc/cloud-init.log
 
 # Extract backend_jar
-mkdir /home/opc/backend
-tar xzf /home/opc/backend_jar.tar.gz -C /home/opc/backend | tee -a /home/opc/bootstrap.log && \
+mkdir -p /home/opc/backend
+tar xzf /home/opc/backend_jar.tar.gz -C /home/opc/backend | tee -a /home/opc/cloud-init.log && \
     rm /home/opc/backend_jar.tar.gz
 chown -R opc:opc /home/opc/backend
 
 # Get ansible_backend
-curl "${ansible_backend_par_full_path}" -o /home/opc/ansible_backend.tar.gz | tee -a /home/opc/bootstrap.log
+curl "${ansible_backend_par_full_path}" -o /home/opc/ansible_backend.tar.gz | tee -a /home/opc/cloud-init.log
 
 # Extract ansible_backend
-mkdir /home/opc/ansible_backend
-tar xzf /home/opc/ansible_backend.tar.gz -C /home/opc/ansible_backend | tee -a /home/opc/bootstrap.log && \
+mkdir -p /home/opc/ansible_backend
+tar xzf /home/opc/ansible_backend.tar.gz -C /home/opc/ansible_backend | tee -a /home/opc/cloud-init.log && \
     rm /home/opc/ansible_backend.tar.gz
 chown -R opc:opc /home/opc/ansible_backend
 
@@ -36,7 +46,9 @@ cat <<EOT >> /home/opc/ansible_params.json
   "region_code_name": "${region_code_name}",
   "compartment_id": "${compartment_id}",
   "genai_endpoint": "${genai_endpoint}",
-  "genai_model_id": "${genai_model_id}"
+  "genai_model_id": "${genai_model_id}",
+  "db_service": "${db_service}",
+  "db_password": "${db_password}"
 }
 EOT
 chown opc:opc /home/opc/ansible_params.json

@@ -1,14 +1,4 @@
 
-resource "time_sleep" "wait_for_web_bastion_plugin" {
-  depends_on = [oci_core_instance.web, data.oci_computeinstanceagent_instance_agent_plugin.web_instance_agent_plugin]
-  create_duration = "12m"
-}
-
-resource "time_sleep" "wait_for_backend_bastion_plugin" {
-  depends_on = [oci_core_instance.backend, data.oci_computeinstanceagent_instance_agent_plugin.backend_instance_agent_plugin]
-  create_duration = "12m"
-}
-
 resource "oci_bastion_bastion" "private_subnet_bastion" {
     bastion_type = "standard"
     compartment_id = var.compartment_ocid
@@ -16,6 +6,11 @@ resource "oci_bastion_bastion" "private_subnet_bastion" {
 
     client_cidr_block_allow_list = [local.anywhere]
     name = "bastion_${local.project_name}_${local.deploy_id}"
+
+    depends_on = [ 
+        data.oci_computeinstanceagent_instance_agent_plugins.backend_instance_agent_plugins, 
+        data.oci_computeinstanceagent_instance_agent_plugins.web_instance_agent_plugins
+        ]
 }
 
 resource "oci_bastion_session" "backend_session" {
@@ -33,8 +28,6 @@ resource "oci_bastion_session" "backend_session" {
     }
 
     display_name = "session_backend_${local.project_name}_${local.deploy_id}"
-
-    depends_on = [time_sleep.wait_for_backend_bastion_plugin]
 }
 
 resource "oci_bastion_session" "web_session" {
@@ -52,6 +45,4 @@ resource "oci_bastion_session" "web_session" {
     }
 
     display_name = "session_web_${local.project_name}_${local.deploy_id}"
-
-    depends_on = [time_sleep.wait_for_web_bastion_plugin]
 }

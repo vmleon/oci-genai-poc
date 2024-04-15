@@ -6,10 +6,13 @@ locals {
   backend_cloud_init_content = templatefile("${path.module}/userdata/backend_bootstrap.tftpl", {
     backend_jar_par_full_path = var.backend_artifact_url
     ansible_backend_par_full_path = var.ansible_backend_artifact_url
+    wallet_par_full_path = oci_objectstorage_preauthrequest.wallet_par.full_path
     region_code_name = var.region
     compartment_id = var.compartment_ocid
     genai_endpoint = var.genai_endpoint
     genai_model_id = var.genai_model_id
+    db_service = "${local.project_name}${local.deploy_id}"
+    db_password = random_password.adb_admin_password.result
   })
 }
 
@@ -63,10 +66,18 @@ resource "oci_core_instance" "web" {
   }
 }
 
-data "oci_computeinstanceagent_instance_agent_plugin" "web_instance_agent_plugin" {
+resource "time_sleep" "wait_for_web" {
+  depends_on = [oci_core_instance.backend[0]]
+  create_duration = "5m"
+}
+// for_each web compute
+data "oci_computeinstanceagent_instance_agent_plugins" "web_instance_agent_plugins" {
+    name = "Bastion"
+    status = "RUNNING"
     instanceagent_id = oci_core_instance.web[0].id
     compartment_id = var.compartment_ocid
-    plugin_name = "Bastion"
+
+    depends_on = [ time_sleep.wait_for_web ]
 }
 
 resource "oci_core_instance" "backend" {
@@ -111,8 +122,17 @@ resource "oci_core_instance" "backend" {
   }
 }
 
-data "oci_computeinstanceagent_instance_agent_plugin" "backend_instance_agent_plugin" {
+resource "time_sleep" "wait_for_backend" {
+  depends_on = [oci_core_instance.backend[0]]
+  create_duration = "5m"
+}
+
+// for_each backend compute
+data "oci_computeinstanceagent_instance_agent_plugins" "backend_instance_agent_plugins" {
+    name = "Bastion"
+    status = "RUNNING"
     instanceagent_id = oci_core_instance.backend[0].id
     compartment_id = var.compartment_ocid
-    plugin_name = "Bastion"
+
+    depends_on = [ time_sleep.wait_for_backend ]
 }
