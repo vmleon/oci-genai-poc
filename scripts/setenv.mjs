@@ -1,11 +1,12 @@
 #!/usr/bin/env zx
-
+import moment from "moment";
 import {
   setVariableFromEnvOrPrompt,
   writeEnvJson,
   readEnvJson,
 } from "./lib/utils.mjs";
 import {
+  getLatestGenAIModels,
   getNamespace,
   getRegions,
   getTenancyId,
@@ -23,9 +24,9 @@ await setTenancyEnv();
 await setNamespaceEnv();
 await setRegionEnv();
 await setCompartmentEnv();
-await setGenAIModelEnv();
 await createSSHKeys("genai");
 await createCerts();
+await setLatestGenAIModel();
 
 async function setTenancyEnv() {
   const tenancyId = await getTenancyId();
@@ -83,15 +84,6 @@ async function printRegionNames(regions) {
   );
 }
 
-async function setGenAIModelEnv() {
-  const genaiModelValue = await setVariableFromEnvOrPrompt(
-    "OCI_GENAI_MODEL_ID",
-    "OCI Gen AI Model ID"
-  );
-  properties = { ...properties, genAiModel: genaiModelValue };
-  await writeEnvJson(properties);
-}
-
 async function createSSHKeys(name) {
   const sshPathParam = path.join(os.homedir(), ".ssh", name);
   const publicKeyContent = await createSSHKeyPair(sshPathParam);
@@ -113,6 +105,32 @@ async function createCerts() {
     ...properties,
     certFullchain: path.join(certPath, "tls.crt"),
     certPrivateKey: path.join(certPath, "tls.key"),
+  };
+  await writeEnvJson(properties);
+}
+
+async function setLatestGenAIModel() {
+  const latestVersionModel = await getLatestGenAIModels(
+    properties.compartmentId,
+    properties.regionName,
+    "cohere",
+    "TEXT_GENERATION"
+  );
+
+  const { id, vendor: vendorName, version, capabilities } = latestVersionModel;
+  const displayName = latestVersionModel["display-name"];
+  const timeCreated = moment(latestVersionModel["time-created"]).fromNow();
+  console.log(
+    `Using GenAI Model ${chalk.green(vendorName)}:${chalk.green(
+      version
+    )} (${chalk.green(displayName)}) with ${capabilities.join(
+      ","
+    )} created ${timeCreated}`
+  );
+
+  properties = {
+    ...properties,
+    genAiModel: id,
   };
   await writeEnvJson(properties);
 }

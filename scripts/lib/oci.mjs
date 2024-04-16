@@ -1,5 +1,6 @@
 #!/usr/bin/env zx
 import { exitWithError } from "./utils.mjs";
+import { where, max } from "underscore";
 
 export async function getRegions() {
   try {
@@ -337,4 +338,51 @@ export async function getBucket(compartmentId, name) {
 
   const listBucket = await listBuckets(compartmentId);
   return listBucket.find((b) => b.name === name);
+}
+
+export async function getLatestGenAIModels(
+  compartmentId,
+  regionName,
+  vendor = "cohere",
+  capability = "TEXT_GENERATION"
+) {
+  if (!compartmentId) {
+    exitWithError(`Compartment Id required to get GenAI models`);
+  }
+  if (!regionName) {
+    exitWithError(`Region name required to get GenAI models`);
+  }
+
+  try {
+    const { stdout, stderr, exitCode } =
+      await $`oci generative-ai model-collection list-models \
+    --compartment-id ${compartmentId} \
+    --region ${regionName}`;
+
+    if (exitCode !== 0) {
+      exitWithError(stderr);
+    }
+
+    if (!stdout.length) return {};
+    const { data } = JSON.parse(stdout.trim());
+
+    const activeCohereModels = where(data.items, {
+      "lifecycle-state": "ACTIVE",
+      vendor: vendor,
+    });
+
+    const filteredByCapatility = activeCohereModels.filter(
+      ({ capabilities }) => {
+        if (capabilities.length !== 1) return false;
+        if (capabilities[0] !== capability) return false;
+        return true;
+      }
+    );
+
+    const latestVersion = max(filteredByCapatility, (item) =>
+      parseFloat(item.version)
+    );
+
+    return latestVersion;
+  } catch (error) {}
 }

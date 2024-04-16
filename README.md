@@ -54,17 +54,6 @@ npx zx scripts/setenv.mjs
 
 > Answer the Compartment name where you want to deploy the infrastructure. Root compartment is the default.
 
-> Answer the OCI Gen AI Model ID that you want to use.
->
-> Pick one from the following command:
->
-> ```bash
-> oci generative-ai model-collection list-models \
->   --compartment-id COMPARTMENT_ID \
->   --region us-chicago-1 | jq \
->       '.data.items | select(.[].capabilities[] | contains("TEXT_GENERATION"))'
-> ```
-
 ### Collect and deliver the artifacts
 
 ```bash

@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "moment": "^2.30.1",
-    "mustache": "^4.2.0"
+    "mustache": "^4.2.0",
+    "underscore": "^1.13.6"
   }
 }
