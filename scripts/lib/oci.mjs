@@ -297,7 +297,7 @@ export async function deletePAR(bucketName, id) {
     const { exitCode, stderr } = await $`oci os preauth-request delete \
       --bucket-name ${bucketName} \
       --namespace-name ${namespace} \
-      --par-id ${id}`;
+      --par-id ${id} --force`;
     if (exitCode !== 0) {
       exitWithError(stderr);
     }
@@ -334,8 +334,6 @@ export async function getBucket(compartmentId, name) {
   if (!name) {
     exitWithError(`Name required to create bucket`);
   }
-  const namespace = await getNamespace();
-
   const listBucket = await listBuckets(compartmentId);
   return listBucket.find((b) => b.name === name);
 }

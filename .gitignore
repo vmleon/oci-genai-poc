@@ -1,7 +1,12 @@
 .certs
 .artifacts
+deploy/k8s/backend/application.yaml
+deploy/k8s/overlays/prod/kustomization.yaml
+
 .env.json
 *.bkp
+*.zip
+kubeconfig
 
 # Logs
 logs

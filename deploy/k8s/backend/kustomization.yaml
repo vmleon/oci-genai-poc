@@ -1,0 +1,10 @@
+resources:
+  - backend.yaml
+  - backend-svc.yaml
+configMapGenerator:
+  - name: backend-properties
+    files:
+      - application.yaml
+  - name: wallet-zip
+    files:
+      - wallet/wallet.zip

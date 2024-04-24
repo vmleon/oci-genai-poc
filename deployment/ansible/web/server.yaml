@@ -1,5 +1,0 @@
-- name: Web
-  hosts: web
-  become: true
-  roles:
-    - static

@@ -1,10 +1,8 @@
 #!/usr/bin/env zx
 import moment from "moment";
-import {
-  setVariableFromEnvOrPrompt,
-  writeEnvJson,
-  readEnvJson,
-} from "./lib/utils.mjs";
+import Configstore from "configstore";
+import inquirer from "inquirer";
+import clear from "clear";
 import {
   getLatestGenAIModels,
   getNamespace,
@@ -18,101 +16,99 @@ const shell = process.env.SHELL | "/bin/zsh";
 $.shell = shell;
 $.verbose = false;
 
-let properties = await readEnvJson();
+clear();
+console.log("Set up environment...");
+
+const projectName = "genai";
+
+const config = new Configstore(projectName, { projectName });
 
 await setTenancyEnv();
 await setNamespaceEnv();
 await setRegionEnv();
 await setCompartmentEnv();
-await createSSHKeys("genai");
+await createSSHKeys(projectName);
 await createCerts();
 await setLatestGenAIModel();
 
+console.log(`\nConfiguration file saved in: ${chalk.green(config.path)}`);
+
 async function setTenancyEnv() {
   const tenancyId = await getTenancyId();
-  properties = { ...properties, tenancyId };
-  await writeEnvJson(properties);
+  config.set("tenancyId", tenancyId);
 }
 
 async function setNamespaceEnv() {
   const namespace = await getNamespace();
-  properties = { ...properties, namespace };
-  await writeEnvJson(properties);
+  config.set("namespace", namespace);
 }
 
 async function setRegionEnv() {
-  const regions = await getRegions();
-  const regionNameValue = await setVariableFromEnvOrPrompt(
-    "OCI_REGION",
-    "OCI Region name",
-    async () => printRegionNames(regions)
+  const listSubscribedRegions = (await getRegions()).sort(
+    (r1, r2) => r1.isHomeRegion > r2.isHomeRegion
   );
-  const { key: regionKey, name: regionName } = regions.find(
-    (r) => r.name === regionNameValue
-  );
-  properties = { ...properties, regionName, regionKey };
-  await writeEnvJson(properties);
+
+  await inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "region",
+        message: "Select the region",
+        choices: listSubscribedRegions.map((r) => r.name),
+        filter(val) {
+          return listSubscribedRegions.find((r) => r.name === val);
+        },
+      },
+    ])
+    .then((answers) => {
+      config.set("regionName", answers.region.name);
+      config.set("regionKey", answers.region.key);
+    });
 }
 
 async function setCompartmentEnv() {
-  const compartmentName = await setVariableFromEnvOrPrompt(
-    "COMPARTMENT_NAME",
-    "Compartment Name (root)"
-  );
-
-  const compartmentId = await searchCompartmentIdByName(
-    compartmentName || "root"
-  );
-  properties = { ...properties, compartmentName, compartmentId };
-  await writeEnvJson(properties);
-}
-
-async function printRegionNames(regions) {
-  const regionNames = regions.map((r) => r.name);
-  const zones = [...new Set(regionNames.map((name) => name.split("-")[0]))];
-  const regionsByZone = regions.reduce((acc, cur) => {
-    const zone = cur.name.split("-")[0];
-    if (acc[zone]) {
-      acc[zone].push(cur.name);
-    } else {
-      acc[zone] = [cur.name];
-    }
-    return acc;
-  }, {});
-  Object.keys(regionsByZone).forEach((zone) =>
-    console.log(`\t${chalk.yellow(zone)}: ${regionsByZone[zone].join(", ")}`)
-  );
+  await inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "compartmentName",
+        message: "Compartment Name",
+        default() {
+          return "root";
+        },
+      },
+    ])
+    .then(async (answers) => {
+      const compartmentName = answers.compartmentName;
+      const compartmentId = await searchCompartmentIdByName(
+        compartmentName || "root"
+      );
+      config.set("compartmentName", compartmentName);
+      config.set("compartmentId", compartmentId);
+    });
 }
 
 async function createSSHKeys(name) {
   const sshPathParam = path.join(os.homedir(), ".ssh", name);
   const publicKeyContent = await createSSHKeyPair(sshPathParam);
-  properties = {
-    ...properties,
-    privateKeyPath: sshPathParam,
-    publicKeyContent,
-    publicKeyPath: `${sshPathParam}.pub`,
-  };
+  config.set("privateKeyPath", sshPathParam);
+  config.set("publicKeyContent", publicKeyContent);
+  config.set("publicKeyPath", `${sshPathParam}.pub`);
   console.log(`SSH key pair created: ${chalk.green(sshPathParam)}`);
-  await writeEnvJson(properties);
 }
 
 async function createCerts() {
   const certPath = path.join(__dirname, "..", ".certs");
   await $`mkdir -p ${certPath}`;
   await createSelfSignedCert(certPath);
-  properties = {
-    ...properties,
-    certFullchain: path.join(certPath, "tls.crt"),
-    certPrivateKey: path.join(certPath, "tls.key"),
-  };
-  await writeEnvJson(properties);
+  config.set("certFullchain", path.join(certPath, "tls.crt"));
+  config.set("certPrivateKey", path.join(certPath, "tls.key"));
 }
 
 async function setLatestGenAIModel() {
   const latestVersionModel = await getLatestGenAIModels(
-    properties.compartmentId,
-    properties.regionName,
+    config.get("compartmentId"),
+    config.get("regionName"),
     "cohere",
     "TEXT_GENERATION"
   );
@@ -128,9 +124,5 @@ async function setLatestGenAIModel() {
     )} created ${timeCreated}`
   );
 
-  properties = {
-    ...properties,
-    genAiModel: id,
-  };
-  await writeEnvJson(properties);
+  config.set("genAiModel", id);
 }

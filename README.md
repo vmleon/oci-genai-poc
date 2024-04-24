@@ -2,43 +2,11 @@
 
 ![Architecture](./images/architecture.png)
 
+Get troubleshoot help on the [FAQ](FAQ.md)
+
 ## Local deployment
 
 Run locally with these steps [Local](LOCAL.md)
-
-## Build artifacts
-
-### Build Java Application:
-
-```bash
-cd backend
-```
-
-```bash
-./gradlew bootJar
-```
-
-> `build/libs/backend-0.0.1.jar` jar file generated
-
-```bash
-cd ..
-```
-
-### Build Web Application:
-
-```bash
-cd web
-```
-
-```bash
-npm run build
-```
-
-> `dist` folder generated
-
-```bash
-cd ..
-```
 
 ## Set Up environment
 
@@ -48,28 +16,22 @@ cd scripts/ && npm install && cd ..
 
 ### Set the environment variables
 
+Generate `terraform.tfvars` file for Terraform.
+
 ```bash
 npx zx scripts/setenv.mjs
 ```
 
 > Answer the Compartment name where you want to deploy the infrastructure. Root compartment is the default.
 
-### Collect and deliver the artifacts
-
-```bash
-npx zx scripts/artifacts.mjs
-```
-
-### Build TF Vars file
+### Deploy Infrastructure
 
 ```bash
 npx zx scripts/tfvars.mjs
 ```
 
-## Deploy
-
 ```bash
-cd deployment/terraform
+cd deploy/terraform
 ```
 
 Init Terraform providers:
@@ -88,20 +50,60 @@ terraform apply --auto-approve
 cd ../..
 ```
 
-## SSH into machines
+## Release and create Kustomization files
 
-If you need to connect with the compute instances, there is two bastion sessions created for backend 0 and web 0 instances. To see the command, type the following command and copy and paste the one you need.
+Build and push images:
 
 ```bash
-npx zx scripts/bastion.mjs
+npx zx scripts/release.mjs
 ```
 
+Create Kustomization files
+
+```bash
+npx zx scripts/kustom.mjs
+```
+
+### Kubernetes Deployment
+
+```bash
+export KUBECONFIG="deploy/terraform/generated/kubeconfig"
+```
+
+```bash
+kubectl cluster-info
+```
+
+```bash
+kubectl apply -k deploy/k8s/overlays/prod
+```
+
+```bash
+kubectl get pod
+```
+
+Access your application:
+
+```bash
+kubectl get service \
+  -n ingress-nginx \
+  -o jsonpath='{.items[?(@.spec.type=="LoadBalancer")].status.loadBalancer.ingress[0].ip}'
+```
+
+Take the Public IP to your browser.
+
 ## Clean up
+
+Delete Kubernetes components
+
+```bash
+kubectl delete -k deploy/k8s/overlays/prod
+```
 
 Destroy infrastructure with Terraform.
 
 ```bash
-cd deployment/terraform
+cd deploy/terraform
 ```
 
 ```bash
@@ -118,16 +120,18 @@ Clean up the artifacts on Object Storage
 npx zx scripts/clean.mjs
 ```
 
-## Issues
+## Known Issues
 
-There is an issue in Terraform `oracle/oci` provider on version `v5.25.0`. It is not updated to the specific version of `terraform-plugin-sdk` that fix the underlying gRCP limit of 4Mb.
+Deploying artifacts as Object Storage.
 
-The project would want to upload artifacts to Object Storage, like the backend jar file, which is bigger than 4Mb.
-
-```terraform
-data "local_file" "backend_jar_tgz" {
-  filename = "${path.module}/../../.artifacts/backend_jar.tar.gz"
-}
-```
-
-As a workaround, a `script/deliver.mjs` script and a `script/clean.mjs` script will deliver and clean the artifacts into Object Storage and make Pre-Authenticated Requests available for Terraform resources.
+> There is an issue in Terraform `oracle/oci` provider on version `v5.25.0`. It is not updated to the specific version of `terraform-plugin-sdk` that fix the underlying gRCP limit of 4Mb.
+>
+> The project would want to upload artifacts to Object Storage, like the backend jar file, which is bigger than 4Mb.
+>
+> ```terraform
+> data "local_file" "backend_jar_tgz" {
+>   filename = "${path.module}/../../.artifacts/backend_jar.tar.gz"
+> }
+> ```
+>
+> As a workaround, a `script/deliver.mjs` script and a `script/clean.mjs` script will deliver and clean the artifacts into Object Storage and make Pre-Authenticated Requests available for Terraform resources.
