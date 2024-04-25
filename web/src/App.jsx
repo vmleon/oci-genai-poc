@@ -17,7 +17,7 @@ function App() {
       }}
     >
       <Container>
-        <Typography variant="h1" component="h2">
+        <Typography variant="h2" component="h2">
           OCI GenAI PoC
         </Typography>
         <Chat />

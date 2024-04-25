@@ -1,7 +1,7 @@
 import { Button, Stack, TextField } from "@mui/material";
 import { useState, useRef } from "react";
 
-function PromptInput({ setConversation, setPromptValue }) {
+function PromptInput({ setConversation, setPromptValue, disabled }) {
   const [inputValue, setInputValue] = useState("");
   const textRef = useRef();
   return (
@@ -10,6 +10,7 @@ function PromptInput({ setConversation, setPromptValue }) {
         id="prompt"
         label="Prompt"
         variant="outlined"
+        disabled={disabled}
         sx={{ width: "50ch" }}
         value={inputValue}
         inputRef={textRef}
@@ -17,6 +18,7 @@ function PromptInput({ setConversation, setPromptValue }) {
       />
       <Button
         variant="contained"
+        disabled={disabled}
         onClick={() => {
           setConversation((c) => {
             return [

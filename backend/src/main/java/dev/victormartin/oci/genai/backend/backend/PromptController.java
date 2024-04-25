@@ -1,5 +1,6 @@
 package dev.victormartin.oci.genai.backend.backend;
 
+import com.oracle.bmc.model.BmcException;
 import dev.victormartin.oci.genai.backend.backend.data.Interaction;
 import dev.victormartin.oci.genai.backend.backend.data.InteractionRepository;
 import org.slf4j.Logger;
@@ -43,12 +44,14 @@ public class PromptController {
 			saved.setResponse(responseFromGenAI);
 			interactionRepository.save(saved);
 			return new Answer(responseFromGenAI, "");
-		} catch (Exception exception) {
-			String errorMessage = exception.getMessage();
+		} catch (BmcException exception) {
+			String unmodifiedMessage = exception.getUnmodifiedMessage();
+			int statusCode = exception.getStatusCode();
+			String errorMessage = statusCode + " " + unmodifiedMessage;
 			logger.error(errorMessage);
 			saved.setErrorMessage(errorMessage);
 			interactionRepository.save(saved);
-			return new Answer("", "errorMessage");
+			return new Answer("", errorMessage);
 		}
 	}
 
