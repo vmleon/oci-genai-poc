@@ -85,9 +85,9 @@ kubectl get pod
 Access your application:
 
 ```bash
-kubectl get service \
+echo $(kubectl get service \
   -n ingress-nginx \
-  -o jsonpath='{.items[?(@.spec.type=="LoadBalancer")].status.loadBalancer.ingress[0].ip}'
+  -o jsonpath='{.items[?(@.spec.type=="LoadBalancer")].status.loadBalancer.ingress[0].ip}')
 ```
 
 Take the Public IP to your browser.
