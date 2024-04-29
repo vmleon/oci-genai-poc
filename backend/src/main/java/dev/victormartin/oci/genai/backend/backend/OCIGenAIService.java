@@ -5,6 +5,7 @@ import com.oracle.bmc.generativeaiinference.model.*;
 import com.oracle.bmc.generativeaiinference.requests.GenerateTextRequest;
 import com.oracle.bmc.generativeaiinference.responses.GenerateTextResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,10 @@ public class OCIGenAIService {
     @Value("${genai.compartment_id}")
     private String COMPARTMENT_ID;
 
-    @Value("${genai.model_id}")
-    private String modelId;
-
     @Autowired
     private GenerativeAiInferenceClient generativeAiInferenceClient;
 
-    public String request(String input) {
+    public String request(String input, String modelId) {
         // Build generate text request, send, and get response
         CohereLlmInferenceRequest llmInferenceRequest =
                 CohereLlmInferenceRequest.builder()

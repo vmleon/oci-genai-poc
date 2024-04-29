@@ -7,7 +7,7 @@ spring:
     driver-class-name: oracle.jdbc.OracleDriver
     url: jdbc:oracle:thin:@{{{db_service}}}_high?TNS_ADMIN={{{path_to_wallet}}}
     username: ADMIN
-    password: {{{db_password}}}
+    password: "{{{db_password}}}"
     type: oracle.ucp.jdbc.PoolDataSource
     oracleucp:
       sql-for-validate-connection: SELECT * FROM dual

@@ -1,4 +1,4 @@
-package dev.victormartin.oci.genai.backend.backend;
+package dev.victormartin.oci.genai.backend.backend.dao;
 
 public class Answer {
 

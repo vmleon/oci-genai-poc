@@ -4,11 +4,9 @@
 
 Get troubleshoot help on the [FAQ](FAQ.md)
 
-## Local deployment
-
-Run locally with these steps [Local](LOCAL.md)
-
 ## Set Up environment
+
+Install dependencies for scripts.
 
 ```bash
 cd scripts/ && npm install && cd ..
@@ -16,7 +14,7 @@ cd scripts/ && npm install && cd ..
 
 ### Set the environment variables
 
-Generate `terraform.tfvars` file for Terraform.
+Generate `genai.json` file with all environment variables.
 
 ```bash
 npx zx scripts/setenv.mjs
@@ -25,6 +23,8 @@ npx zx scripts/setenv.mjs
 > Answer the Compartment name where you want to deploy the infrastructure. Root compartment is the default.
 
 ### Deploy Infrastructure
+
+Generate `terraform.tfvars` file for Terraform.
 
 ```bash
 npx zx scripts/tfvars.mjs
@@ -79,7 +79,15 @@ kubectl apply -k deploy/k8s/overlays/prod
 ```
 
 ```bash
-kubectl get pod
+kubectl get deploy
+```
+
+Wait for all deployments to be `Ready` and `Available`.
+
+```
+NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+backend   1/1     1            1           3m20s
+web       1/1     1            1           3m20s
 ```
 
 Access your application:
@@ -119,6 +127,10 @@ Clean up the artifacts on Object Storage
 ```bash
 npx zx scripts/clean.mjs
 ```
+
+## Local deployment
+
+Run locally with these steps [Local](LOCAL.md)
 
 ## Known Issues
 

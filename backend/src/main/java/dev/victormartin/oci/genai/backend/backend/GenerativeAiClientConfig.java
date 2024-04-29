@@ -6,7 +6,7 @@ import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.auth.InstancePrincipalsAuthenticationDetailsProvider;
-import com.oracle.bmc.generativeaiinference.GenerativeAiInferenceClient;
+import com.oracle.bmc.generativeai.GenerativeAiClient;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +19,9 @@ import org.springframework.core.env.Environment;
 import java.io.IOException;
 
 @Configuration
-public class GenerativeAiInferenceClientConfig {
+public class GenerativeAiClientConfig {
 
-    Logger logger = LoggerFactory.getLogger(GenerativeAiInferenceClientConfig.class);
+    Logger logger = LoggerFactory.getLogger(GenerativeAiClientConfig.class);
 
     @Autowired
     private Environment environment;
@@ -50,10 +50,9 @@ public class GenerativeAiInferenceClientConfig {
     }
 
     @Bean
-    GenerativeAiInferenceClient genAiInferenceClient() throws IOException {
+    GenerativeAiClient genAiClient() throws IOException {
         String[] activeProfiles = environment.getActiveProfiles();
         String profile = activeProfiles[0];
-        logger.info("Profile: " + profile);
         if (profile.equals("production")) {
             return instancePrincipalConfig();
         } else {
@@ -61,27 +60,26 @@ public class GenerativeAiInferenceClientConfig {
         }
     }
 
-    GenerativeAiInferenceClient instancePrincipalConfig() throws IOException {
+    GenerativeAiClient instancePrincipalConfig() throws IOException {
         final InstancePrincipalsAuthenticationDetailsProvider provider =
                 new InstancePrincipalsAuthenticationDetailsProvider.InstancePrincipalsAuthenticationDetailsProviderBuilder().build();
 
-        GenerativeAiInferenceClient generativeAiInferenceClient = new GenerativeAiInferenceClient(provider,
-                clientConfiguration);
-        generativeAiInferenceClient.setEndpoint(ENDPOINT);
-        generativeAiInferenceClient.setRegion(provider.getRegion());
-        return generativeAiInferenceClient;
+        GenerativeAiClient generativeAiClient = new GenerativeAiClient(provider, clientConfiguration);
+        generativeAiClient.setRegion(provider.getRegion());
+        generativeAiClient.setEndpoint(ENDPOINT);
+        return generativeAiClient;
     }
 
-    GenerativeAiInferenceClient localConfig() throws IOException {
+    GenerativeAiClient localConfig() throws IOException {
         // Configuring the AuthenticationDetailsProvider. It's assuming there is a default OCI config file
         // "~/.oci/config", and a profile in that config with the name defined in CONFIG_PROFILE variable.
         final ConfigFileReader.ConfigFile configFile =  ConfigFileReader.parse(CONFIG_LOCATION, CONFIG_PROFILE);
         final AuthenticationDetailsProvider provider = new ConfigFileAuthenticationDetailsProvider(configFile);
 
-        GenerativeAiInferenceClient generativeAiInferenceClient =  new GenerativeAiInferenceClient(provider,
+        GenerativeAiClient generativeAiClient = new GenerativeAiClient(provider,
                 clientConfiguration);
-        generativeAiInferenceClient.setEndpoint(ENDPOINT);
-        generativeAiInferenceClient.setRegion(region);
-        return generativeAiInferenceClient;
+        generativeAiClient.setEndpoint(ENDPOINT);
+        generativeAiClient.setRegion(region);
+        return generativeAiClient;
     }
 }

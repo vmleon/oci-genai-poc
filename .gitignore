@@ -2,6 +2,7 @@
 .artifacts
 deploy/k8s/backend/application.yaml
 deploy/k8s/overlays/prod/kustomization.yaml
+deploy/k8s/backend/wallet/
 
 generated/
 

@@ -48,15 +48,19 @@ async function setRegionEnv() {
     (r1, r2) => r1.isHomeRegion > r2.isHomeRegion
   );
 
+  const listWithGenAISupportingRegions = listSubscribedRegions.filter(
+    (r) => r.key === "ord"
+  );
+
   await inquirer
     .prompt([
       {
         type: "list",
         name: "region",
         message: "Select the region",
-        choices: listSubscribedRegions.map((r) => r.name),
+        choices: listWithGenAISupportingRegions.map((r) => r.name),
         filter(val) {
-          return listSubscribedRegions.find((r) => r.name === val);
+          return listWithGenAISupportingRegions.find((r) => r.name === val);
         },
       },
     ])

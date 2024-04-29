@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Box,
+  CircularProgress,
+  Snackbar,
+  Divider,
+} from "@mui/material";
 import PromptInput from "./PromptInput";
 import Conversation from "./Conversation";
 import { useStomp } from "./stompHook";
@@ -13,7 +22,33 @@ function Chat() {
   const [waiting, setWaiting] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState();
+  const [modelId, setModelId] = useState();
+  const [models, setModels] = useState();
+  const [updateModels, setUpdateModels] = useState(true);
   const { subscribe, unsubscribe, send, isConnected } = useStomp();
+
+  useEffect(() => {
+    const fecthModels = async () => {
+      try {
+        const response = await fetch("/api/genai/models");
+        const data = await response.json();
+        setModels(
+          data.filter(
+            ({ capabilities }) =>
+              capabilities.length === 1 &&
+              capabilities.includes("TEXT_GENERATION")
+          )
+        );
+      } catch (error) {
+        setErrorMessage("Error fetching Generative AI Models from Backend");
+      }
+    };
+
+    if (updateModels) {
+      setUpdateModels(false);
+      fecthModels();
+    }
+  }, [updateModels]);
 
   useEffect(() => {
     let timeoutId;
@@ -22,7 +57,7 @@ function Chat() {
         setWaiting(false);
         setShowError(true);
         setErrorMessage("Request timeout");
-      }, 10000);
+      }, 30000);
     } else {
     }
     return () => (timeoutId ? clearTimeout(timeoutId) : null);
@@ -55,7 +90,7 @@ function Chat() {
 
   useEffect(() => {
     if (isConnected && promptValue.length) {
-      send("/genai/prompt", { conversationId, content: promptValue });
+      send("/genai/prompt", { conversationId, content: promptValue, modelId });
       setWaiting(true);
       setPromptValue("");
     }
@@ -64,7 +99,24 @@ function Chat() {
 
   return (
     <Box>
-      {/* {isConnected && <Alert>Connected</Alert>} */}
+      <FormControl fullWidth>
+        <InputLabel id="model-label">Model</InputLabel>
+        <Select
+          labelId="model-label"
+          id="model"
+          defaultValue={""}
+          label="Models"
+          onChange={(e) => setModelId(e.target.value)}
+        >
+          {models &&
+            models.map((model) => (
+              <MenuItem key={model.id} value={model.id}>
+                {model.name} v{model.version} ({model.capabilities.join(", ")})
+              </MenuItem>
+            ))}
+        </Select>
+      </FormControl>
+      <Divider style={{ margin: "1rem" }} />
       <Conversation>{conversation}</Conversation>
       {waiting && <CircularProgress style={{ padding: "1rem" }} />}
       <PromptInput
