@@ -78,6 +78,8 @@ kubectl cluster-info
 kubectl apply -k deploy/k8s/overlays/prod
 ```
 
+Run `get deploy` a few times:
+
 ```bash
 kubectl get deploy
 ```
@@ -86,8 +88,8 @@ Wait for all deployments to be `Ready` and `Available`.
 
 ```
 NAME      READY   UP-TO-DATE   AVAILABLE   AGE
-backend   1/1     1            1           3m20s
-web       1/1     1            1           3m20s
+backend   1/1     1            1           3m28s
+web       1/1     1            1           3m21s
 ```
 
 Access your application:
