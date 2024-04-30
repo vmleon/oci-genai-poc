@@ -23,6 +23,7 @@ dependencies {
 	implementation 'com.oracle.oci.sdk:oci-java-sdk-shaded-full:3.33.0'
 	implementation 'com.oracle.oci.sdk:oci-java-sdk-core:3.35.0'
 	implementation 'com.oracle.oci.sdk:oci-java-sdk-common:3.35.0'
+	implementation 'com.oracle.oci.sdk:oci-java-sdk-addons-oke-workload-identity:3.35.0'
 	implementation 'com.oracle.oci.sdk:oci-java-sdk-generativeai:3.35.0'
 	implementation 'com.oracle.database.jdbc:ojdbc11-production:21.8.0.0'
 	implementation 'com.oracle.database.jdbc:ucp:21.8.0.0'

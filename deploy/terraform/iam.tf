@@ -1,23 +1,16 @@
 locals {
-  compartment_dynamic_group_name = "${local.project_name}_${local.deploy_id}_compartment_dynamic_group"
+  oke_policy_name = "${local.project_name}_${local.deploy_id}_oke"
   ocir_group_name                = "${local.project_name}-${local.deploy_id}-group"
 }
 
-resource "oci_identity_dynamic_group" "genai_dynamic_group" {
-  provider       = oci.home
-  name           = local.compartment_dynamic_group_name
-  compartment_id = var.tenancy_ocid
-  description    = "${local.project_name} ${local.deploy_id} Dynamic Group"
-  matching_rule  = "ANY { instance.compartment.id = '${var.compartment_ocid}' }"
-}
-
-resource "oci_identity_policy" "allow-genai-policy" {
+resource "oci_identity_policy" "allow-oke-genai-policy" {
   provider       = oci.home
   compartment_id = var.tenancy_ocid
-  name           = local.compartment_dynamic_group_name
-  description    = "Allow dynamic group ${local.compartment_dynamic_group_name} to manage gen ai service for ${local.project_name} ${local.deploy_id}"
+  name           = "${local.oke_policy_name}"
+  description    = "Allow OKE workload to manage gen ai service for ${local.project_name} ${local.deploy_id}"
   statements = [
-    "allow dynamic-group ${local.compartment_dynamic_group_name} to manage generative-ai-family in compartment id ${var.compartment_ocid}"
+    "Allow any-user to manage generative-ai-family in compartment id ${var.compartment_ocid} where all { request.principal.type = 'workload', request.principal.namespace = 'default', request.principal.service_account = 'genai-sa', request.principal.cluster_id = '${module.oke.cluster_id}' }",
+    "Allow any-user to manage generative-ai-model in compartment id ${var.compartment_ocid} where all { request.principal.type = 'workload', request.principal.namespace = 'default', request.principal.service_account = 'genai-sa', request.principal.cluster_id = '${module.oke.cluster_id}' }"
   ]
 }
 

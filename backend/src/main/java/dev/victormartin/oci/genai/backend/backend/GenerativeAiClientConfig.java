@@ -6,6 +6,7 @@ import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.auth.InstancePrincipalsAuthenticationDetailsProvider;
+import com.oracle.bmc.auth.okeworkloadidentity.OkeWorkloadIdentityAuthenticationDetailsProvider;
 import com.oracle.bmc.generativeai.GenerativeAiClient;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -61,11 +62,15 @@ public class GenerativeAiClientConfig {
     }
 
     GenerativeAiClient instancePrincipalConfig() throws IOException {
-        final InstancePrincipalsAuthenticationDetailsProvider provider =
-                new InstancePrincipalsAuthenticationDetailsProvider.InstancePrincipalsAuthenticationDetailsProviderBuilder().build();
+        final OkeWorkloadIdentityAuthenticationDetailsProvider okeProvider =
+                new OkeWorkloadIdentityAuthenticationDetailsProvider
+                        .OkeWorkloadIdentityAuthenticationDetailsProviderBuilder()
+                        .build();
+//        final InstancePrincipalsAuthenticationDetailsProvider provider =
+//                new InstancePrincipalsAuthenticationDetailsProvider.InstancePrincipalsAuthenticationDetailsProviderBuilder().build();
 
-        GenerativeAiClient generativeAiClient = new GenerativeAiClient(provider, clientConfiguration);
-        generativeAiClient.setRegion(provider.getRegion());
+        GenerativeAiClient generativeAiClient = new GenerativeAiClient(okeProvider, clientConfiguration);
+        generativeAiClient.setRegion(okeProvider.getRegion());
         generativeAiClient.setEndpoint(ENDPOINT);
         return generativeAiClient;
     }

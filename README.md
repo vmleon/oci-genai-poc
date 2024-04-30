@@ -100,6 +100,8 @@ echo $(kubectl get service \
   -o jsonpath='{.items[?(@.spec.type=="LoadBalancer")].status.loadBalancer.ingress[0].ip}')
 ```
 
+> This command will list the services on the `ingress-nginx` namespace and filter for the Load Balancer. If the response is an empty string, wait a bit and execute the command again. The Load Balancer takes a bit of time to create the Public IP address.
+
 Take the Public IP to your browser.
 
 ## Clean up

@@ -20,6 +20,8 @@ spec:
       labels:
         app: backend
     spec:
+      serviceAccountName: genai-sa
+      automountServiceAccountToken: true
       initContainers:
       - name: unzip
         image: busybox
